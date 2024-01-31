@@ -37,7 +37,10 @@ pub enum Command {
 #[derive(Debug, Subcommand)]
 pub enum DbCommand {
     /// Save a file into the database and get the hash.
-    SaveFile { path: PathBuf },
+    SaveFile {
+        #[arg(required = true)]
+        paths: Vec<PathBuf>,
+    },
 }
 
 pub fn main() -> Result<()> {
@@ -65,7 +68,7 @@ pub fn run_command(cwd: &Path, cli: Cli) -> Result<()> {
                 workspace::Workspace::find(&cwd).wrap_err("failed to open workspace")?;
 
             match command {
-                DbCommand::SaveFile { path } => commands::db::save_file(&workspace, &path),
+                DbCommand::SaveFile { paths } => commands::db::save_file(&workspace, &paths),
             }
         }
     }

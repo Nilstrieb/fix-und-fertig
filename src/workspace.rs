@@ -12,7 +12,7 @@ use color_eyre::{
 
 pub struct Workspace {
     root: Dir,
-    db: Db,
+    pub db: Db,
 }
 
 impl Workspace {
@@ -49,7 +49,9 @@ pub fn find_workspace_dir(mut dir: &Path) -> Result<Option<PathBuf>> {
         for child in readdir {
             let child = child
                 .wrap_err_with(|| format!("failed to read entry in directory {}", dir.display()))?;
-            if child.path().ends_with(".fuf") {}
+            if child.path().ends_with(".fuf") {
+                return Ok(Some(dir.to_owned()));
+            }
         }
 
         let Some(parent) = dir.parent() else {

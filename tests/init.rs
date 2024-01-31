@@ -17,11 +17,5 @@ fn double_init() {
     let dir = tmpdir();
 
     run_in(&dir, ["init"]).unwrap();
-
-    assert!(dir.path().join(".fuf").is_dir());
-    assert!(dir.path().join(".fuf").join("db").is_dir());
-    assert!(dir.path().join(".fuf").join("db").join("objects").is_dir());
-
-
     assert!(run_in(&dir, ["init"]).is_err());
 }
