@@ -23,7 +23,6 @@ use color_eyre::{
 };
 
 pub struct Db {
-    db: Dir,
     objects: Dir,
 }
 
@@ -49,7 +48,7 @@ impl Db {
             .open_dir("objects")
             .wrap_err("error opening .fuf/db/objects")?;
 
-        Ok(Self { db, objects })
+        Ok(Self { objects })
     }
 
     pub fn save_file(&self, content: &[u8]) -> Result<Address> {

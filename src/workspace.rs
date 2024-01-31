@@ -11,7 +11,7 @@ use color_eyre::{
 };
 
 pub struct Workspace {
-    root: Dir,
+    _root: Dir,
     pub db: Db,
 }
 
@@ -34,7 +34,7 @@ impl Workspace {
         let dir = File::open(root).wrap_err("opening workspace directory")?;
         let dir = Dir::from_std_file(dir);
         let db = Db::open(&dir).wrap_err("opening .fuf database")?;
-        Ok(Self { root: dir, db })
+        Ok(Self { _root: dir, db })
     }
 }
 
