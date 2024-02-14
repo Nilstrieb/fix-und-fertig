@@ -13,7 +13,7 @@ use cap_std::fs::Dir;
 use clap::{Parser, Subcommand};
 use color_eyre::{eyre::Context, Result};
 
-use crate::workspace;
+use crate::{db::Address, workspace};
 
 #[derive(Debug, Parser)]
 #[command(name = "fuf")]
@@ -41,6 +41,15 @@ pub enum DbCommand {
         #[arg(required = true)]
         paths: Vec<PathBuf>,
     },
+    /// Save a tree (directory) into the database and get the hash.
+    SaveTree {
+        #[arg(required = true)]
+        paths: Vec<PathBuf>,
+    },
+    /// Reads the blob behind an address.
+    ReadBlob {
+        hash: Address,
+    }
 }
 
 pub fn main() -> Result<()> {
@@ -69,6 +78,8 @@ pub fn run_command(cwd: &Path, cli: Cli) -> Result<()> {
 
             match command {
                 DbCommand::SaveFile { paths } => commands::db::save_file(&workspace, &paths),
+                DbCommand::SaveTree { paths } => commands::db::save_tree(&workspace, &paths),
+                DbCommand::ReadBlob { hash: address } => commands::db::read_blob(&workspace, address),
             }
         }
     }

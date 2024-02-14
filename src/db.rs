@@ -14,6 +14,7 @@
 //! ```
 
 use std::io::{self, Read};
+use std::str::FromStr;
 use std::{fmt::Display, io::Write};
 
 use cap_std::fs::Dir;
@@ -51,15 +52,16 @@ impl Db {
         Ok(Self { objects })
     }
 
-    pub fn save_file(&self, content: &[u8]) -> Result<Address> {
+    pub fn save_blob(&self, content: &[u8]) -> Result<Address> {
         let hash = Address(blake3::hash(content));
 
         let prefix_dir = self
             .open_prefix_dir(hash)
             .wrap_err("opening prefix dir for saving file")?;
 
-        let suffix = &hash.0.to_hex()[2..];
-        match prefix_dir.create(suffix) {
+        let full_name = hash.0.to_hex();
+        let full_name = full_name.as_str();
+        match prefix_dir.create(full_name) {
             Ok(mut file) => {
                 file.write_all(content)
                     .wrap_err("writing contents of file")?;
@@ -70,7 +72,7 @@ impl Db {
                 if cfg!(debug_assertions) {
                     let mut existing_content = Vec::new();
                     let _: usize = prefix_dir
-                        .open(suffix)
+                        .open(full_name)
                         .wrap_err("opening file")?
                         .read_to_end(&mut existing_content)
                         .wrap_err("reading existing content")?;
@@ -84,6 +86,11 @@ impl Db {
         }
 
         Ok(hash)
+    }
+
+    pub fn read_blob(&self, address: Address) -> Result<Vec<u8>> {
+        let prefix_dir = self.open_prefix_dir(address).wrap_err("opening prefix dir for reading file")?;
+        prefix_dir.read(address.0.to_hex().as_str()).wrap_err("reading file")
     }
 
     fn open_prefix_dir(&self, hash: Address) -> Result<Dir> {
@@ -127,5 +134,13 @@ fn open_or_create<T>(
 impl Display for Address {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(&self.0.to_hex())
+    }
+}
+
+impl FromStr for Address {
+    type Err = blake3::HexError;
+
+    fn from_str(s: &str) -> std::prelude::v1::Result<Self, Self::Err> {
+        blake3::Hash::from_str(s).map(Self)
     }
 }
